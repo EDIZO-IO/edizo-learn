@@ -53,6 +53,7 @@ function App() {
           <Route path="quiz" element={<Quiz />} />
           <Route path="blogs" element={<Blogs />} />
           <Route path="interview" element={<Interview />} />
+          <Route path="/interview/problems/:id" element={<ProblemPage />} />
           <Route path="dashboard" element={
             <AuthGuard>
               <Dashboard />
