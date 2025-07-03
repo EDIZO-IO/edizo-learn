@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom'; // ⬅️ Removed BrowserRouter here
 import { Toaster } from 'react-hot-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './lib/firebase';
@@ -30,13 +30,11 @@ function App() {
 
       return () => unsubscribe();
     } else {
-      // If Firebase is not initialized, set loading to false
       setLoading(false);
     }
   }, [setUser, setLoading]);
 
   useEffect(() => {
-    // Apply theme to document
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -45,36 +43,34 @@ function App() {
   }, [isDark]);
 
   return (
-    <Router>
-      <div className={isDark ? 'dark' : ''}>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="auth" element={<Auth />} />
-            <Route path="playground" element={<Playground />} />
-            <Route path="tutorials" element={<Tutorials />} />
-            <Route path="quiz" element={<Quiz />} />
-            <Route path="blogs" element={<Blogs />} />
-            <Route path="interview" element={<Interview />} />
-            <Route path="dashboard" element={
-              <AuthGuard>
-                <Dashboard />
-              </AuthGuard>
-            } />
-          </Route>
-        </Routes>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: isDark ? '#374151' : '#ffffff',
-              color: isDark ? '#ffffff' : '#000000',
-            },
-          }}
-        />
-      </div>
-    </Router>
+    <div className={isDark ? 'dark' : ''}>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="auth" element={<Auth />} />
+          <Route path="playground" element={<Playground />} />
+          <Route path="tutorials" element={<Tutorials />} />
+          <Route path="quiz" element={<Quiz />} />
+          <Route path="blogs" element={<Blogs />} />
+          <Route path="interview" element={<Interview />} />
+          <Route path="dashboard" element={
+            <AuthGuard>
+              <Dashboard />
+            </AuthGuard>
+          } />
+        </Route>
+      </Routes>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: isDark ? '#374151' : '#ffffff',
+            color: isDark ? '#ffffff' : '#000000',
+          },
+        }}
+      />
+    </div>
   );
 }
 
