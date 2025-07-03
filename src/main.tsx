@@ -6,7 +6,7 @@ import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter basename="/edizo-learn">
+    <BrowserRouter >
       <App />
     </BrowserRouter>
   </StrictMode>
