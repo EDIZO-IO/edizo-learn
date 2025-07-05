@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Code, ChevronLeft, Check, X, Copy, ChevronDown, ChevronUp } from 'lucide-react';
+import { Code, ChevronLeft, Check, X, Copy, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useThemeStore } from '../stores/themeStore';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
+import Tabs from '../components/UI/Tabs';
+import Editor from '@monaco-editor/react';
+import { problems } from '../data/problemData'; // Import problems from problemData.tsx
 
 const ProblemPage = () => {
   const { isDark } = useThemeStore();
@@ -13,89 +16,23 @@ const ProblemPage = () => {
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('javascript');
   const [showConsole, setShowConsole] = useState(false);
-  const [consoleOutput, setConsoleOutput] = useState([]);
+  const [consoleOutput, setConsoleOutput] = useState<Array<{type: string, message: string}>>([]);
   const [testCases, setTestCases] = useState([
     { input: '', output: '', result: '', expanded: false }
   ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [executionTime, setExecutionTime] = useState<number | null>(null);
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  // Sample problem data - in a real app, this would come from an API
-  const problems = {
-    '1': {
-      id: '1',
-      title: 'Two Sum',
-      difficulty: 'Easy',
-      frequency: '95%',
-      description: `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+  // Get problem data based on ID from the imported problems object
+  const problem = problems[id as keyof typeof problems]; // Type assertion for problem ID
 
-You may assume that each input would have exactly one solution, and you may not use the same element twice.
-
-You can return the answer in any order.`,
-      examples: [
-        {
-          input: 'nums = [2,7,11,15], target = 9',
-          output: '[0,1]',
-          explanation: 'Because nums[0] + nums[1] == 9, we return [0, 1].'
-        },
-        {
-          input: 'nums = [3,2,4], target = 6',
-          output: '[1,2]',
-          explanation: 'Because nums[1] + nums[2] == 6, we return [1, 2].'
-        }
-      ],
-      constraints: [
-        '2 <= nums.length <= 10^4',
-        '-10^9 <= nums[i] <= 10^9',
-        '-10^9 <= target <= 10^9',
-        'Only one valid answer exists.'
-      ],
-      solution: `function twoSum(nums, target) {
-  const map = new Map();
-  for (let i = 0; i < nums.length; i++) {
-    const complement = target - nums[i];
-    if (map.has(complement)) {
-      return [map.get(complement), i];
+  // Set initial code when problem changes
+  useEffect(() => {
+    if (problem) {
+      setCode(`// ${problem.title}\n// Solution in ${language}\n\n${problem.solution}`);
     }
-    map.set(nums[i], i);
-  }
-  return [];
-}`,
-      explanation: `We use a hash table to store the value and its index as we iterate through the array. For each element, we calculate the complement (target - current element) and check if it exists in the hash table. If it does, we return the indices of the current element and its complement. This approach has a time complexity of O(n) and space complexity of O(n).`
-    },
-    '2': {
-      id: '2',
-      title: 'Reverse Linked List',
-      difficulty: 'Easy',
-      frequency: '88%',
-      description: `Given the head of a singly linked list, reverse the list, and return the reversed list.`,
-      examples: [
-        {
-          input: 'head = [1,2,3,4,5]',
-          output: '[5,4,3,2,1]',
-          explanation: 'The list is reversed'
-        }
-      ],
-      constraints: [
-        'The number of nodes in the list is the range [0, 5000]',
-        '-5000 <= Node.val <= 5000'
-      ],
-      solution: `function reverseList(head) {
-  let prev = null;
-  let current = head;
-  
-  while (current !== null) {
-    let next = current.next;
-    current.next = prev;
-    prev = current;
-    current = next;
-  }
-  
-  return prev;
-}`,
-      explanation: `We use three pointers: prev, current, and next. We iterate through the list, reversing the links between nodes. The time complexity is O(n) and space complexity is O(1).`
-    }
-  };
-
-  const problem = problems[id];
+  }, [problem, language]);
 
   if (!problem) {
     return (
@@ -113,25 +50,63 @@ You can return the answer in any order.`,
   }
 
   const handleRunCode = () => {
-    // In a real app, this would execute the code against test cases
-    setConsoleOutput([
-      { type: 'info', message: 'Running test cases...' },
-      { type: 'success', message: 'Test case 1 passed' },
-      { type: 'success', message: 'Test case 2 passed' }
-    ]);
+    setIsLoading(true);
     setShowConsole(true);
+    setConsoleOutput([{ type: 'info', message: 'Running test cases...' }]);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const newOutput = [...consoleOutput];
+      const passed = Math.random() > 0.3; // 70% chance of passing
+      
+      testCases.forEach((testCase, index) => {
+        if (testCase.input && testCase.output) {
+          newOutput.push({
+            type: passed ? 'success' : 'error',
+            message: passed 
+              ? `Test case ${index + 1} passed`
+              : `Test case ${index + 1} failed`
+          });
+        }
+      });
+      
+      setConsoleOutput(newOutput);
+      setExecutionTime(Math.floor(Math.random() * 100) + 50); // Random time between 50-150ms
+      setIsLoading(false);
+    }, 1500);
   };
 
   const handleSubmitCode = () => {
-    // In a real app, this would submit to a judge system
-    setConsoleOutput([
-      { type: 'info', message: 'Submitting solution...' },
-      { type: 'success', message: 'All test cases passed!' }
-    ]);
+    setIsLoading(true);
+    setSubmissionStatus('idle');
     setShowConsole(true);
+    setConsoleOutput([{ type: 'info', message: 'Submitting solution...' }]);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const success = Math.random() > 0.2; // 80% chance of success
+      const newOutput = [...consoleOutput];
+      
+      if (success) {
+        newOutput.push({
+          type: 'success',
+          message: 'All test cases passed!'
+        });
+        setSubmissionStatus('success');
+      } else {
+        newOutput.push({
+          type: 'error',
+          message: 'Some test cases failed'
+        });
+        setSubmissionStatus('error');
+      }
+      
+      setConsoleOutput(newOutput);
+      setIsLoading(false);
+    }, 2000);
   };
 
-  const toggleTestCase = (index) => {
+  const toggleTestCase = (index: number) => {
     const newTestCases = [...testCases];
     newTestCases[index].expanded = !newTestCases[index].expanded;
     setTestCases(newTestCases);
@@ -139,6 +114,24 @@ You can return the answer in any order.`,
 
   const addTestCase = () => {
     setTestCases([...testCases, { input: '', output: '', result: '', expanded: true }]);
+  };
+
+  const removeTestCase = (index: number) => {
+    if (testCases.length > 1) {
+      const newTestCases = [...testCases];
+      newTestCases.splice(index, 1);
+      setTestCases(newTestCases);
+    }
+  };
+
+  const handleEditorChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      setCode(value);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(code);
   };
 
   return (
@@ -159,16 +152,18 @@ You can return the answer in any order.`,
             {problem.title}
           </h1>
           <span className={`ml-4 px-2 py-1 rounded-full text-xs font-medium ${
-            problem.difficulty === 'Easy' 
+            problem.difficulty === 'easy' 
               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-              : problem.difficulty === 'Medium'
+              : problem.difficulty === 'medium'
               ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+              : problem.difficulty === 'hard'
+              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' // Default if difficulty is not recognized
           }`}>
-            {problem.difficulty}
+            {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)} {/* Capitalize first letter */}
           </span>
           <span className={`ml-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-            Frequency: {problem.frequency}
+            Frequency: {problem.frequency}% {/* Add % sign */}
           </span>
         </div>
 
@@ -210,7 +205,7 @@ You can return the answer in any order.`,
                 )}
 
                 {problem.constraints && problem.constraints.length > 0 && (
-                  <div>
+                  <div className="mb-6">
                     <h2 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       Constraints
                     </h2>
@@ -221,29 +216,54 @@ You can return the answer in any order.`,
                     </ul>
                   </div>
                 )}
+
+                {problem.hints && problem.hints.length > 0 && (
+                  <div className="mb-6">
+                    <h2 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Hints
+                    </h2>
+                    <ol className={`list-decimal pl-5 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {problem.hints.map((hint, index) => (
+                        <li key={index}>{hint}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                {problem.relatedProblems && problem.relatedProblems.length > 0 && (
+                  <div>
+                    <h2 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Related Problems
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      {problem.relatedProblems.map((related, index) => (
+                        <Button 
+                          key={index}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/problem/${related.id}`)}
+                        >
+                          {related.title}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
 
           {/* Code editor and console area */}
           <div className={`lg:w-1/2 ${activeTab === 'solution' ? 'block' : 'hidden lg:block'}`}>
-            <div className="flex mb-2">
-              <Button
-                variant={activeTab === 'problem' ? 'primary' : 'outline'}
-                size="sm"
-                className="mr-2"
-                onClick={() => setActiveTab('problem')}
-              >
-                Problem
-              </Button>
-              <Button
-                variant={activeTab === 'solution' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTab('solution')}
-              >
-                Solution
-              </Button>
-            </div>
+            <Tabs
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              tabs={[
+                { id: 'problem', label: 'Problem' },
+                { id: 'solution', label: 'Solution' }
+              ]}
+              className="mb-4"
+            />
 
             {activeTab === 'solution' ? (
               <Card className="mb-4">
@@ -252,14 +272,26 @@ You can return the answer in any order.`,
                     <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       Solution Code
                     </h3>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={copyToClipboard}>
                       <Copy className="w-4 h-4 mr-1" />
                       Copy
                     </Button>
                   </div>
-                  <pre className={`p-4 rounded-lg overflow-auto ${isDark ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-800'}`}>
-                    <code>{problem.solution}</code>
-                  </pre>
+                  <div className="rounded-lg overflow-hidden">
+                    <Editor
+                      height="300px"
+                      language={language}
+                      value={problem.solution}
+                      theme={isDark ? 'vs-dark' : 'light'}
+                      options={{
+                        readOnly: true,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        fontSize: 14,
+                        wordWrap: 'on',
+                      }}
+                    />
+                  </div>
                   <div className="mt-4">
                     <h4 className={`font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       Explanation
@@ -285,17 +317,26 @@ You can return the answer in any order.`,
                         <option value="java">Java</option>
                         <option value="c++">C++</option>
                       </select>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={copyToClipboard}>
                         <Copy className="w-4 h-4 mr-1" />
                         Copy
                       </Button>
                     </div>
-                    <textarea
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                      className={`w-full h-64 p-4 rounded-lg font-mono text-sm ${isDark ? 'bg-gray-800 text-gray-200 border-gray-700' : 'bg-white text-gray-800 border-gray-300'} border`}
-                      placeholder={`// Write your ${language} code here`}
-                    />
+                    <div className="rounded-lg overflow-hidden">
+                      <Editor
+                        height="400px"
+                        language={language}
+                        value={code}
+                        onChange={handleEditorChange}
+                        theme={isDark ? 'vs-dark' : 'light'}
+                        options={{
+                          minimap: { enabled: false },
+                          scrollBeyondLastLine: false,
+                          fontSize: 14,
+                          wordWrap: 'on',
+                        }}
+                      />
+                    </div>
                   </div>
                 </Card>
 
@@ -305,9 +346,11 @@ You can return the answer in any order.`,
                       <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         Test Cases
                       </h3>
-                      <Button size="sm" onClick={addTestCase}>
-                        Add Test Case
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={addTestCase}>
+                          Add Test Case
+                        </Button>
+                      </div>
                     </div>
                     {testCases.map((testCase, index) => (
                       <div key={index} className={`mb-3 rounded-lg overflow-hidden ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
@@ -315,12 +358,36 @@ You can return the answer in any order.`,
                           className={`p-3 flex justify-between items-center cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                           onClick={() => toggleTestCase(index)}
                         >
-                          <span>Test Case {index + 1}</span>
-                          {testCase.expanded ? (
-                            <ChevronUp className="w-5 h-5" />
-                          ) : (
-                            <ChevronDown className="w-5 h-5" />
-                          )}
+                          <div className="flex items-center">
+                            <span>Test Case {index + 1}</span>
+                            {testCase.result && (
+                              <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${
+                                testCase.result === 'passed' 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              }`}>
+                                {testCase.result}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center">
+                            {testCases.length > 1 && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeTestCase(index);
+                                }}
+                                className="mr-2 text-gray-500 hover:text-red-500"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                            {testCase.expanded ? (
+                              <ChevronUp className="w-5 h-5" />
+                            ) : (
+                              <ChevronDown className="w-5 h-5" />
+                            )}
+                          </div>
                         </div>
                         {testCase.expanded && (
                           <div className="p-3 border-t border-gray-200 dark:border-gray-700">
@@ -337,6 +404,7 @@ You can return the answer in any order.`,
                                   setTestCases(newTestCases);
                                 }}
                                 className={`w-full p-2 rounded border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                placeholder="Enter input (e.g., [2,7,11,15], 9)"
                               />
                             </div>
                             <div className="mb-2">
@@ -352,6 +420,7 @@ You can return the answer in any order.`,
                                   setTestCases(newTestCases);
                                 }}
                                 className={`w-full p-2 rounded border ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                placeholder="Enter expected output (e.g., [0,1])"
                               />
                             </div>
                           </div>
@@ -362,11 +431,32 @@ You can return the answer in any order.`,
                 </Card>
 
                 <div className="flex space-x-3 mb-4">
-                  <Button onClick={handleRunCode}>
-                    Run Code
+                  <Button 
+                    onClick={handleRunCode}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Running...
+                      </>
+                    ) : (
+                      'Run Code'
+                    )}
                   </Button>
-                  <Button variant="primary" onClick={handleSubmitCode}>
-                    Submit
+                  <Button 
+                    variant="primary" 
+                    onClick={handleSubmitCode}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit'
+                    )}
                   </Button>
                 </div>
 
@@ -377,13 +467,20 @@ You can return the answer in any order.`,
                         <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           Console
                         </h3>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => setShowConsole(false)}
-                        >
-                          Hide
-                        </Button>
+                        <div className="flex items-center gap-3">
+                          {executionTime && (
+                            <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                              Time: {executionTime}ms
+                            </span>
+                          )}
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setShowConsole(false)}
+                          >
+                            Hide
+                          </Button>
+                        </div>
                       </div>
                       <div className={`p-3 rounded-lg font-mono text-sm max-h-40 overflow-y-auto ${isDark ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-800'}`}>
                         {consoleOutput.length === 0 ? (
@@ -406,6 +503,39 @@ You can return the answer in any order.`,
                           ))
                         )}
                       </div>
+                    </div>
+                  </Card>
+                )}
+
+                {submissionStatus !== 'idle' && (
+                  <Card className={`mt-4 border-l-4 ${
+                    submissionStatus === 'success' 
+                      ? 'border-green-500 dark:border-green-600' 
+                      : 'border-red-500 dark:border-red-600'
+                  }`}>
+                    <div className="p-4">
+                      <div className="flex items-center">
+                        {submissionStatus === 'success' ? (
+                          <>
+                            <Check className="w-6 h-6 text-green-500 mr-2" />
+                            <h3 className="text-green-700 dark:text-green-400 font-medium">
+                              Submission Accepted
+                            </h3>
+                          </>
+                        ) : (
+                          <>
+                            <X className="w-6 h-6 text-red-500 mr-2" />
+                            <h3 className="text-red-700 dark:text-red-400 font-medium">
+                              Submission Failed
+                            </h3>
+                          </>
+                        )}
+                      </div>
+                      <p className={`mt-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {submissionStatus === 'success' 
+                          ? 'Your solution passed all test cases!'
+                          : 'Some test cases did not pass. Try again!'}
+                      </p>
                     </div>
                   </Card>
                 )}

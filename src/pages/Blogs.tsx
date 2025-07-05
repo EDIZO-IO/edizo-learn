@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, User, Heart, MessageCircle, Share, ArrowLeft } from 'lucide-react';
+import { allBlogs, Blog } from '../data/blogData'; // Import allBlogs and Blog interface from blogData.tsx
 
 // Mocking external dependencies for a self-contained example
+// In a real application, useThemeStore, Card, and Button would be imported from your UI library
 const useThemeStore = () => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(false); // Simplified for this example
   return { isDark };
 };
 
@@ -48,23 +50,13 @@ const Button = ({ children, onClick, className = '', variant = 'primary', size =
   );
 };
 
-interface Blog {
-  id: number;
-  title: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  authorImage: string;
-  publishDate: string;
-  readTime: string;
-  category: string;
-  image: string;
-  likes: number;
-  comments: number;
-  tags: string[];
+interface BlogArticleProps {
+  blog: Blog;
+  isDark: boolean;
+  onBack: () => void;
 }
 
-const BlogArticle = ({ blog, isDark, onBack }) => {
+const BlogArticle = ({ blog, isDark, onBack }: BlogArticleProps) => {
   return (
     <div className={`min-h-screen font-inter ${isDark ? 'bg-gray-900' : 'bg-gray-50'} py-8`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -111,20 +103,11 @@ const BlogArticle = ({ blog, isDark, onBack }) => {
                 </span>
               </div>
 
-              <div className={`prose max-w-none ${isDark ? 'prose-invert text-gray-200' : 'text-gray-800'}`}>
-                <p className="mb-4">{blog.content}</p>
-                <h3 className={`text-xl font-semibold mt-8 mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Key Takeaways:
-                </h3>
-                <ul className="list-disc list-inside space-y-2">
-                  <li>Understand the core concepts of {blog.category}.</li>
-                  <li>Practice with hands-on examples.</li>
-                  <li>Stay updated with the latest trends.</li>
-                </ul>
-                <p className="mt-6">
-                  We hope you found this article insightful. Feel free to share your thoughts in the comments below!
-                </p>
-              </div>
+              {/* Render content using dangerouslySetInnerHTML for rich text from Markdown */}
+              <div 
+                className={`prose max-w-none ${isDark ? 'prose-invert text-gray-200' : 'text-gray-800'}`}
+                dangerouslySetInnerHTML={{ __html: blog.content }}
+              />
 
               <div className="flex items-center justify-between mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center space-x-4 text-sm">
@@ -149,7 +132,13 @@ const BlogArticle = ({ blog, isDark, onBack }) => {
   );
 };
 
-const BlogCard = ({ blog, onClick, isDark }) => {
+interface BlogCardProps {
+  blog: Blog;
+  onClick: (id: number) => void;
+  isDark: boolean;
+}
+
+const BlogCard = ({ blog, onClick, isDark }: BlogCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -207,59 +196,11 @@ const BlogCard = ({ blog, onClick, isDark }) => {
   );
 };
 
-const App = () => {
+const Blogs = () => {
   const { isDark } = useThemeStore();
-  const [selectedBlogId, setSelectedBlogId] = useState(null);
+  const [selectedBlogId, setSelectedBlogId] = useState<number | null>(null);
   
-  const allBlogs = [
-    {
-      id: 1,
-      title: 'The Complete Guide to React Hooks in 2024',
-      excerpt: 'Learn everything about React Hooks with practical examples and best practices for modern React development.',
-      content: `React Hooks have revolutionized how we write React components...`, // (full content as before)
-      author: 'Sarah Johnson',
-      authorImage: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150',
-      publishDate: '2024-01-15',
-      readTime: '8 min read',
-      category: 'react',
-      image: 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=600',
-      likes: 245,
-      comments: 32,
-      tags: ['React', 'Hooks', 'JavaScript', 'Frontend']
-    },
-    {
-      id: 2,
-      title: 'Mastering Async/Await in JavaScript',
-      excerpt: 'Deep dive into asynchronous JavaScript programming with async/await and learn how to handle promises effectively.',
-      content: `Asynchronous programming is crucial for modern web development...`, // (full content as before)
-      author: 'Mike Chen',
-      authorImage: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150',
-      publishDate: '2024-01-12',
-      readTime: '6 min read',
-      category: 'javascript',
-      image: 'https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=600',
-      likes: 189,
-      comments: 24,
-      tags: ['JavaScript', 'Async', 'Promises', 'ES6']
-    },
-    {
-      id: 3,
-      title: 'Python Data Science: From Beginner to Pro',
-      excerpt: 'Complete roadmap for learning data science with Python, including essential libraries and practical projects.',
-      content: `Data science with Python has become increasingly popular...`, // (full content as before)
-      author: 'Emily Rodriguez',
-      authorImage: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
-      publishDate: '2024-01-10',
-      readTime: '12 min read',
-      category: 'python',
-      image: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=600',
-      likes: 312,
-      comments: 45,
-      tags: ['Python', 'Data Science', 'Machine Learning', 'Analytics']
-    }
-  ];
-
-  const handleViewArticle = (blogId) => {
+  const handleViewArticle = (blogId: number) => {
     setSelectedBlogId(blogId);
   };
 
@@ -272,7 +213,7 @@ const App = () => {
   return (
     <div className={`min-h-screen font-inter ${isDark ? 'bg-gray-900' : 'bg-gray-50'} py-8`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {selectedBlogId ? (
+        {selectedBlogId && currentBlog ? ( // Ensure currentBlog is not null before rendering BlogArticle
           <BlogArticle 
             blog={currentBlog} 
             isDark={isDark}
@@ -303,4 +244,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Blogs;

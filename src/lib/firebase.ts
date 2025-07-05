@@ -3,7 +3,9 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// ✅ Required ENV variables
+// ✅ Environment Variables
+const env = import.meta.env;
+
 const requiredEnvVars = [
   'VITE_FIREBASE_API_KEY',
   'VITE_FIREBASE_AUTH_DOMAIN',
@@ -13,34 +15,34 @@ const requiredEnvVars = [
   'VITE_FIREBASE_APP_ID',
 ];
 
-// ✅ Check for missing or placeholder values
-const missingVars = requiredEnvVars.filter(
-  (key) =>
-    !import.meta.env[key] || import.meta.env[key].startsWith('your_')
-);
+// ✅ Missing Key Check (only in dev)
+if (import.meta.env.DEV) {
+  const missingVars = requiredEnvVars.filter(
+    (key) => !env[key] || env[key].startsWith('your_')
+  );
 
-if (missingVars.length > 0) {
-  console.error(
-    '❌ Firebase config error: Missing or invalid environment variables:',
-    missingVars
-  );
-  console.error(
-    '👉 Please check your `.env` or Netlify project settings and update the values.'
-  );
+  if (missingVars.length > 0) {
+    console.error('❌ Missing Firebase ENV variables:', missingVars);
+    console.error(
+      '👉 Check your `.env` file or Netlify environment settings.'
+    );
+  }
 }
 
 // ✅ Firebase Config
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: env.VITE_FIREBASE_API_KEY,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.VITE_FIREBASE_APP_ID,
 };
 
-// ✅ Initialize app safely
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+// ✅ Initialize App
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+// ✅ Export Firebase Services
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
