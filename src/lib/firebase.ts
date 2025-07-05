@@ -1,10 +1,8 @@
+// ✅ firebase.ts
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-
-// ✅ Environment Variables
-const env = import.meta.env;
 
 const requiredEnvVars = [
   'VITE_FIREBASE_API_KEY',
@@ -15,36 +13,29 @@ const requiredEnvVars = [
   'VITE_FIREBASE_APP_ID',
 ];
 
-// ✅ Missing Key Check (only in dev)
-if (import.meta.env.DEV) {
-  const missingVars = requiredEnvVars.filter(
-    (key) => !env[key] || env[key].startsWith('your_')
-  );
+const missingVars = requiredEnvVars.filter(
+  (key) => !import.meta.env[key] || import.meta.env[key].startsWith('your_')
+);
 
-  if (missingVars.length > 0) {
-    console.error('❌ Missing Firebase ENV variables:', missingVars);
-    console.error(
-      '👉 Check your `.env` file or Netlify environment settings.'
-    );
-  }
+if (missingVars.length > 0) {
+  console.error(
+    '❌ Firebase config error: Missing or invalid environment variables:',
+    missingVars
+  );
 }
 
-// ✅ Firebase Config
 const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY,
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// ✅ Initialize App
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-
-// ✅ Export Firebase Services
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-export { app, auth, db, storage };
+export { app, auth, db, storage, doc, getDoc, setDoc };
