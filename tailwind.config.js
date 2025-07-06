@@ -46,7 +46,7 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       animation: {
-        'float': 'float 3s ease-in-out infinite',
+        float: 'float 3s ease-in-out infinite',
         'pulse-slow': 'pulse 3s ease-in-out infinite',
       },
       keyframes: {
@@ -57,5 +57,9 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),       // better form styling
+    require('tailwind-scrollbar'),       // custom scrollbar
+    require('tailwind-scrollbar-hide'),  // hide scrollbars when needed
+  ],
 };

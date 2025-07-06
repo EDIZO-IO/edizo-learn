@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Save, Share } from 'lucide-react';
+import { Play, Save, Share, Sun, Moon } from 'lucide-react';
 
 // Mocking external dependencies for a self-contained example
 // --- Mock useThemeStore ---
 const useThemeStore = () => {
   const [isDark, setIsDark] = useState(false); // Default to light theme for clarity
-  return { isDark };
+
+  const toggleTheme = () => {
+    setIsDark(prevIsDark => !prevIsDark);
+  };
+
+  return { isDark, toggleTheme };
 };
 
 // --- Mock toast (react-hot-toast) ---
@@ -30,16 +35,29 @@ const CodeEditor = ({ language, initialCode, height, onChange }) => {
     }
   };
 
-  const getLanguageClass = (lang) => {
-    switch (lang) {
+  // Updated to support more languages
+  const getLanguageClass = (lang: string): string => {
+    switch (lang.toLowerCase()) {
       case 'html':
         return 'language-html';
       case 'css':
         return 'language-css';
       case 'javascript':
-        return 'language-js';
+      case 'js':
+        return 'language-javascript';
+      case 'typescript':
+      case 'ts':
+        return 'language-typescript';
+      case 'react':
+      case 'jsx':
+        return 'language-jsx';
+      case 'python':
+      case 'py':
+        return 'language-python';
+      case 'json':
+        return 'language-json';
       default:
-        return '';
+        return ''; // fallback (could return 'language-text' if desired)
     }
   };
 
@@ -114,7 +132,7 @@ interface Challenge {
 
 // --- Main Playground Component ---
 const App = () => {
-  const { isDark } = useThemeStore();
+  const { isDark, toggleTheme } = useThemeStore();
   const [activeTab, setActiveTab] = useState('javascript');
   const [output, setOutput] = useState('');
   const [htmlCode, setHtmlCode] = useState(`<!DOCTYPE html>
@@ -225,227 +243,357 @@ document.addEventListener('DOMContentLoaded', function() {
   const programmingChallenges: Challenge[] = [
     // JavaScript Challenges (6)
     {
-      id: 'js-1',
-      title: 'FizzBuzz',
-      description: 'Write a program that prints numbers from 1 to 100. For multiples of 3, print "Fizz" instead of the number. For multiples of 5, print "Buzz". For numbers which are multiples of both 3 and 5, print "FizzBuzz".',
-      category: 'javascript',
-      starterCode: {
-        html: `<!DOCTYPE html>
+  id: 'js-1',
+  title: 'FizzBuzz',
+  description:
+    'Write a program that prints numbers from 1 to 100. For multiples of 3, print "Fizz" instead of the number. For multiples of 5, print "Buzz". For numbers which are multiples of both 3 and 5, print "FizzBuzz".',
+  category: 'javascript',
+  starterCode: {
+    html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FizzBuzz</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FizzBuzz</title>
 </head>
 <body>
-    <pre id="output"></pre>
+  <h1>FizzBuzz Output</h1>
+  <pre id="output"></pre>
 </body>
 </html>`,
-        css: `body { font-family: sans-serif; } #output { white-space: pre-wrap; }`,
-        js: `const outputDiv = document.getElementById('output');
-let result = '';
-for (let i = 1; i <= 100; i++) {
-    // Your code here
-    // Example: if (i % 3 === 0 && i % 5 === 0) { result += 'FizzBuzz\\n'; }
-    // else if (i % 3 === 0) { result += 'Fizz\\n'; }
-    // else if (i % 5 === 0) { result += 'Buzz\\n'; }
-    // else { result += i + '\\n'; }
+
+    css: `body {
+  font-family: sans-serif;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  color: #333;
 }
+h1 {
+  font-size: 1.5rem;
+}
+#output {
+  white-space: pre-wrap;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 8px;
+  max-width: 600px;
+}`,
+
+    js: `const outputDiv = document.getElementById('output');
+let result = '';
+
+for (let i = 1; i <= 100; i++) {
+  if (i % 3 === 0 && i % 5 === 0) {
+    result += 'FizzBuzz\\n';
+  } else if (i % 3 === 0) {
+    result += 'Fizz\\n';
+  } else if (i % 5 === 0) {
+    result += 'Buzz\\n';
+  } else {
+    result += i + '\\n';
+  }
+}
+
 outputDiv.textContent = result;`
-      }
-    },
+  }
+},
     {
-      id: 'js-2',
-      title: 'Palindrome Checker',
-      description: 'Write a JavaScript function that checks if a given string is a palindrome (reads the same forwards and backward).',
-      category: 'javascript',
-      starterCode: {
-        html: `<!DOCTYPE html>
+  id: 'js-2',
+  title: 'Palindrome Checker',
+  description: 'Write a JavaScript function that checks if a given string is a palindrome (reads the same forwards and backward).',
+  category: 'javascript',
+  starterCode: {
+    html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palindrome Checker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Palindrome Checker</title>
 </head>
 <body>
-    <input type="text" id="textInput" placeholder="Enter a string">
-    <button id="checkButton">Check</button>
-    <p id="result"></p>
+  <input type="text" id="textInput" placeholder="Enter a string">
+  <button id="checkButton">Check</button>
+  <p id="result"></p>
 </body>
 </html>`,
-        css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
-        js: `function isPalindrome(str) {
-    // Your code here
-    // Example: const cleanedStr = str.toLowerCase().replace(/[^a-z0-9]/g, '');
-    // return cleanedStr === cleanedStr.split('').reverse().join('');
+
+    css: `body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 100px;
+}
+input {
+  padding: 8px;
+  font-size: 1rem;
+}
+button {
+  padding: 8px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+}`,
+
+    js: `function isPalindrome(str) {
+  const cleanedStr = str.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const reversedStr = cleanedStr.split('').reverse().join('');
+  return cleanedStr === reversedStr;
 }
 
 document.getElementById('checkButton').addEventListener('click', () => {
-    const text = document.getElementById('textInput').value;
-    const resultP = document.getElementById('result');
-    if (isPalindrome(text)) {
-        resultP.textContent = \`"\${text}" is a palindrome!\`;
-        resultP.style.color = 'green';
-    } else {
-        resultP.textContent = \`"\${text}" is NOT a palindrome.\`;
-        resultP.style.color = 'red';
-    }
+  const text = document.getElementById('textInput').value;
+  const resultP = document.getElementById('result');
+
+  if (text.trim() === '') {
+    resultP.textContent = 'Please enter a word or sentence.';
+    resultP.style.color = 'orange';
+    return;
+  }
+
+  if (isPalindrome(text)) {
+    resultP.textContent = \`"\${text}" is a palindrome!\`;
+    resultP.style.color = 'green';
+  } else {
+    resultP.textContent = \`"\${text}" is NOT a palindrome.\`;
+    resultP.style.color = 'red';
+  }
 });`
-      }
-    },
-    {
-      id: 'js-3',
-      title: 'Array Sum and Average',
-      description: 'Write a JavaScript function that takes an array of numbers and returns an object containing their sum and average.',
-      category: 'javascript',
-      starterCode: {
-        html: `<!DOCTYPE html>
+  }
+},
+   {
+  id: 'js-3',
+  title: 'Array Sum and Average',
+  description: 'Write a JavaScript function that takes an array of numbers and returns an object containing their sum and average.',
+  category: 'javascript',
+  starterCode: {
+    html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Array Stats</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Array Stats</title>
 </head>
 <body>
-    <p>Numbers: [10, 20, 30, 40, 50]</p>
-    <button id="calculateButton">Calculate Stats</button>
-    <p id="sumResult"></p>
-    <p id="avgResult"></p>
+  <p>Numbers: [10, 20, 30, 40, 50]</p>
+  <button id="calculateButton">Calculate Stats</button>
+  <p id="sumResult"></p>
+  <p id="avgResult"></p>
 </body>
 </html>`,
-        css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
-        js: `function getArrayStats(arr) {
-    // Your code here
-    // Example: const sum = arr.reduce((acc, num) => acc + num, 0);
-    // const average = sum / arr.length;
-    // return { sum, average };
+
+    css: `body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 100px;
+}
+button {
+  padding: 8px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+}`,
+
+    js: `function getArrayStats(arr) {
+  const sum = arr.reduce((acc, num) => acc + num, 0);
+  const average = sum / arr.length;
+  return { sum, average };
 }
 
 document.getElementById('calculateButton').addEventListener('click', () => {
-    const numbers = [10, 20, 30, 40, 50];
-    const stats = getArrayStats(numbers);
-    document.getElementById('sumResult').textContent = \`Sum: \${stats.sum}\`;
-    document.getElementById('avgResult').textContent = \`Average: \${stats.average}\`;
+  const numbers = [10, 20, 30, 40, 50];
+  const stats = getArrayStats(numbers);
+  document.getElementById('sumResult').textContent = \`Sum: \${stats.sum}\`;
+  document.getElementById('avgResult').textContent = \`Average: \${stats.average}\`;
 });`
-      }
-    },
-    {
-      id: 'js-4',
-      title: 'Factorial Calculator',
-      description: 'Implement a JavaScript function to calculate the factorial of a non-negative integer.',
-      category: 'javascript',
-      starterCode: {
-        html: `<!DOCTYPE html>
+  }
+},
+{
+  id: 'js-4',
+  title: 'Factorial Calculator',
+  description: 'Implement a JavaScript function to calculate the factorial of a non-negative integer.',
+  category: 'javascript',
+  starterCode: {
+    html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factorial</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Factorial</title>
 </head>
 <body>
-    <input type="number" id="numInput" value="5" min="0">
-    <button id="calculateButton">Calculate Factorial</button>
-    <p id="result"></p>
+  <input type="number" id="numInput" value="5" min="0" />
+  <button id="calculateButton">Calculate Factorial</button>
+  <p id="result"></p>
 </body>
 </html>`,
-        css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
-        js: `function factorial(n) {
-    // Your code here (iterative or recursive)
-    // Example iterative: let res = 1; for (let i = 2; i <= n; i++) res *= i; return res;
-    // Example recursive: if (n === 0) return 1; return n * factorial(n - 1);
+
+    css: `body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 100px;
+}
+input, button {
+  font-size: 1rem;
+  padding: 8px 16px;
+  border-radius: 4px;
+}`,
+
+    js: `function factorial(n) {
+  if (n === 0 || n === 1) return 1;
+  return n * factorial(n - 1);
 }
 
 document.getElementById('calculateButton').addEventListener('click', () => {
-    const num = parseInt(document.getElementById('numInput').value);
-    if (num >= 0) {
-        document.getElementById('result').textContent = \`Factorial of \${num} is \${factorial(num)}\`;
-    } else {
-        document.getElementById('result').textContent = 'Please enter a non-negative number.';
-    }
+  const num = parseInt(document.getElementById('numInput').value);
+  const resultEl = document.getElementById('result');
+
+  if (!isNaN(num) && num >= 0) {
+    const result = factorial(num);
+    resultEl.textContent = \`Factorial of \${num} is \${result}\`;
+    resultEl.style.color = 'green';
+  } else {
+    resultEl.textContent = 'Please enter a non-negative number.';
+    resultEl.style.color = 'red';
+  }
 });`
-      }
-    },
-    {
-      id: 'js-5',
-      title: 'Fibonacci Sequence Generator',
-      description: 'Write a JavaScript function that generates the first N numbers of the Fibonacci sequence.',
-      category: 'javascript',
-      starterCode: {
-        html: `<!DOCTYPE html>
+  }
+},
+{
+  id: 'js-5',
+  title: 'Fibonacci Sequence Generator',
+  description: 'Write a JavaScript function that generates the first N numbers of the Fibonacci sequence.',
+  category: 'javascript',
+  starterCode: {
+    html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fibonacci</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fibonacci</title>
 </head>
 <body>
-    <input type="number" id="countInput" value="10" min="1">
-    <button id="generateButton">Generate Fibonacci</button>
-    <p id="result"></p>
+  <input type="number" id="countInput" value="10" min="1" />
+  <button id="generateButton">Generate Fibonacci</button>
+  <p id="result"></p>
 </body>
 </html>`,
-        css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
-        js: `function generateFibonacci(n) {
-    // Your code here
-    // Example: if (n <= 0) return []; if (n === 1) return [0];
-    // let sequence = [0, 1];
-    // for (let i = 2; i < n; i++) {
-    //     sequence.push(sequence[i - 1] + sequence[i - 2]);
-    // }
-    // return sequence;
+
+    css: `body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 100px;
+}
+input, button {
+  font-size: 1rem;
+  padding: 8px 16px;
+  border-radius: 4px;
+}`,
+
+    js: `function generateFibonacci(n) {
+  if (n <= 0) return [];
+  if (n === 1) return [0];
+  if (n === 2) return [0, 1];
+
+  const sequence = [0, 1];
+  for (let i = 2; i < n; i++) {
+    sequence.push(sequence[i - 1] + sequence[i - 2]);
+  }
+  return sequence;
 }
 
 document.getElementById('generateButton').addEventListener('click', () => {
-    const count = parseInt(document.getElementById('countInput').value);
-    if (count > 0) {
-        document.getElementById('result').textContent = \`Fibonacci sequence (first \${count} numbers): \${generateFibonacci(count).join(', ')}\`;
-    } else {
-        document.getElementById('result').textContent = 'Please enter a positive number.';
-    }
+  const count = parseInt(document.getElementById('countInput').value);
+  const resultEl = document.getElementById('result');
+
+  if (!isNaN(count) && count > 0) {
+    const sequence = generateFibonacci(count);
+    resultEl.textContent = \`Fibonacci sequence (first \${count} numbers): \${sequence.join(', ')}\`;
+    resultEl.style.color = 'green';
+  } else {
+    resultEl.textContent = 'Please enter a positive number.';
+    resultEl.style.color = 'red';
+  }
 });`
-      }
-    },
-    {
-      id: 'js-6',
-      title: 'Reverse a String',
-      description: 'Create a JavaScript function that reverses a given string without using the built-in `reverse()` method for arrays.',
-      category: 'javascript',
-      starterCode: {
-        html: `<!DOCTYPE html>
+  }
+},
+{
+  id: 'js-6',
+  title: 'Reverse a String',
+  description: 'Create a JavaScript function that reverses a given string without using the built-in `reverse()` method for arrays.',
+  category: 'javascript',
+  starterCode: {
+    html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reverse String</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reverse String</title>
 </head>
 <body>
-    <input type="text" id="textInput" placeholder="Enter a string">
-    <button id="reverseButton">Reverse</button>
-    <p id="result"></p>
+  <input type="text" id="textInput" placeholder="Enter a string" />
+  <button id="reverseButton">Reverse</button>
+  <p id="result"></p>
 </body>
 </html>`,
-        css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
-        js: `function reverseString(str) {
-    // Your code here
-    // Example: let reversed = ''; for (let i = str.length - 1; i >= 0; i--) { reversed += str[i]; } return reversed;
+
+    css: `body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 100px;
+}
+input, button {
+  font-size: 1rem;
+  padding: 8px 16px;
+  border-radius: 4px;
+}`,
+
+    js: `function reverseString(str) {
+  let reversed = '';
+  for (let i = str.length - 1; i >= 0; i--) {
+    reversed += str[i];
+  }
+  return reversed;
 }
 
 document.getElementById('reverseButton').addEventListener('click', () => {
-    const text = document.getElementById('textInput').value;
-    document.getElementById('result').textContent = \`Reversed: \${reverseString(text)}\`;
+  const text = document.getElementById('textInput').value;
+  const resultEl = document.getElementById('result');
+
+  if (text.trim() === '') {
+    resultEl.textContent = 'Please enter a string.';
+    resultEl.style.color = 'orange';
+    return;
+  }
+
+  resultEl.textContent = \`Reversed: \${reverseString(text)}\`;
+  resultEl.style.color = 'green';
 });`
-      }
-    },
+  }
+},
 
     // React Challenges (6)
-    {
-      id: 'react-1',
-      title: 'Simple Counter',
-      description: 'Create a React component that displays a number and has two buttons: "Increment" and "Decrement". Clicking the buttons should change the displayed number.',
-      category: 'react',
-      starterCode: {
-        html: `<!-- No specific HTML needed, React will render into #root -->`,
-        css: `/* Tailwind CSS is included in the React environment */
+{
+  id: 'react-1',
+  title: 'Simple Counter',
+  description: 'Create a React component that displays a number and has two buttons: "Increment" and "Decrement". Clicking the buttons should change the displayed number.',
+  category: 'react',
+  starterCode: {
+    html: `<!-- No specific HTML needed, React will render into #root -->`,
+
+    css: `/* Tailwind CSS is included in the React environment */
 .container {
   display: flex;
   flex-direction: column;
@@ -456,51 +604,61 @@ document.getElementById('reverseButton').addEventListener('click', () => {
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }`,
-        js: `import React, { useState } from 'react';
+
+    js: `import React, { useState } from 'react';
 
 const Counter = () => {
   const [count, setCount] = useState(0);
 
   const increment = () => {
-    // Your code here
-    // setCount(prevCount => prevCount + 1);
+    setCount(prevCount => prevCount + 1);
   };
 
   const decrement = () => {
-    // Your code here
-    // setCount(prevCount => prevCount - 1);
+    setCount(prevCount => prevCount - 1);
   };
 
   return (
     <div className="container">
       <h2 className="text-2xl font-bold">Count: {count}</h2>
       <div className="flex gap-4">
-        <button onClick={decrement} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Decrement</button>
-        <button onClick={increment} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Increment</button>
+        <button
+          onClick={decrement}
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+        >
+          Decrement
+        </button>
+        <button
+          onClick={increment}
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+        >
+          Increment
+        </button>
       </div>
     </div>
   );
 };
 
 export default Counter;`
-      }
-    },
-    {
-      id: 'react-2',
-      title: 'Toggle Visibility',
-      description: 'Build a React component with a button that toggles the visibility of a paragraph of text. Initially, the text should be visible.',
-      category: 'react',
-      starterCode: {
-        html: `<!-- No specific HTML needed, React will render into #root -->`,
-        css: `/* Tailwind CSS is included in the React environment */`,
-        js: `import React, { useState } from 'react';
+  }
+},
+{
+  id: 'react-2',
+  title: 'Toggle Visibility',
+  description: 'Build a React component with a button that toggles the visibility of a paragraph of text. Initially, the text should be visible.',
+  category: 'react',
+  starterCode: {
+    html: `<!-- No specific HTML needed, React will render into #root -->`,
+
+    css: `/* Tailwind CSS is included in the React environment */`,
+
+    js: `import React, { useState } from 'react';
 
 const ToggleText = () => {
   const [isVisible, setIsVisible] = useState(true);
 
   const toggle = () => {
-    // Your code here
-    // setIsVisible(!isVisible);
+    setIsVisible((prev) => !prev);
   };
 
   return (
@@ -511,24 +669,30 @@ const ToggleText = () => {
       >
         {isVisible ? 'Hide Text' : 'Show Text'}
       </button>
-      {/* Conditionally render the paragraph */}
-      {/* {isVisible && <p className="text-lg text-gray-700">This is the text to toggle!</p>} */}
+
+      {isVisible && (
+        <p className="text-lg text-gray-700">
+          This is the text to toggle!
+        </p>
+      )}
     </div>
   );
 };
 
 export default ToggleText;`
-      }
-    },
-    {
-      id: 'react-3',
-      title: 'Basic Todo List',
-      description: 'Create a simple React Todo List application where users can add new tasks and mark existing tasks as complete.',
-      category: 'react',
-      starterCode: {
-        html: `<!-- No specific HTML needed, React will render into #root -->`,
-        css: `/* Tailwind CSS is included in the React environment */`,
-        js: `import React, { useState } from 'react';
+  }
+},
+{
+  id: 'react-3',
+  title: 'Basic Todo List',
+  description: 'Create a simple React Todo List application where users can add new tasks and mark existing tasks as complete.',
+  category: 'react',
+  starterCode: {
+    html: `<!-- No specific HTML needed, React will render into #root -->`,
+
+    css: `/* Tailwind CSS is included in the React environment */`,
+
+    js: `import React, { useState } from 'react';
 
 const TodoList = () => {
   const [todos, setTodos] = useState([]);
@@ -536,16 +700,18 @@ const TodoList = () => {
 
   const addTodo = () => {
     if (newTodo.trim() === '') return;
-    // Your code here to add a new todo
-    // setTodos([...todos, { id: Date.now(), text: newTodo, completed: false }]);
-    // setNewTodo('');
+    setTodos([...todos, { id: Date.now(), text: newTodo, completed: false }]);
+    setNewTodo('');
   };
 
   const toggleComplete = (id) => {
-    // Your code here to toggle todo completion
-    // setTodos(todos.map(todo => 
-    //   todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    // ));
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
   };
 
   return (
@@ -567,32 +733,33 @@ const TodoList = () => {
         </button>
       </div>
       <ul>
-        {/* Render your todos here */}
-        {/* {todos.map(todo => (
-          <li key={todo.id} className="flex items-center justify-between p-2 border-b last:border-b-0">
-            <span 
-              style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
-              className="text-lg cursor-pointer"
+        {todos.map(todo => (
+          <li
+            key={todo.id}
+            className="flex items-center justify-between p-2 border-b last:border-b-0"
+          >
+            <span
               onClick={() => toggleComplete(todo.id)}
+              className={\`text-lg cursor-pointer \${todo.completed ? 'line-through text-gray-400' : ''}\`}
             >
               {todo.text}
             </span>
-            <button 
-              onClick={() => setTodos(todos.filter(t => t.id !== todo.id))}
+            <button
+              onClick={() => deleteTodo(todo.id)}
               className="text-red-500 hover:text-red-700"
             >
               Delete
             </button>
           </li>
-        ))} */}
+        ))}
       </ul>
     </div>
   );
 };
 
 export default TodoList;`
-      }
-    },
+  }
+},
     {
       id: 'react-4',
       title: 'Display List from Array',
@@ -609,11 +776,11 @@ const MyList = ({ items }) => {
       <h2 className="text-xl font-bold mb-4">My Items:</h2>
       <ul>
         {/* Map over the 'items' prop and render list items */}
-        {/* {items.map((item, index) => (
+        {items.map((item, index) => (
           <li key={index} className="text-lg mb-2 p-2 bg-gray-100 rounded-md">
             {item}
           </li>
-        ))} */}
+        ))}
       </ul>
     </div>
   );
@@ -643,7 +810,7 @@ const ControlledInput = () => {
 
   const handleChange = (event) => {
     // Your code here
-    // setInputValue(event.target.value);
+    setInputValue(event.target.value);
   };
 
   return (
@@ -682,21 +849,21 @@ const DataFetcher = () => {
 
   useEffect(() => {
     // Your code here to fetch data
-    // async function fetchData() {
-    //   try {
-    //     const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
-    //     if (!response.ok) {
-    //       throw new Error(\`HTTP error! status: \${response.status}\`);
-    //     }
-    //     const json = await response.json();
-    //     setData(json);
-    //   } catch (e) {
-    //     setError(e);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // }
-    // fetchData();
+    async function fetchData() {
+      try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+        if (!response.ok) {
+          throw new Error(\`HTTP error! status: \${response.status}\`);
+        }
+        const json = await response.json();
+        setData(json);
+      } catch (e) {
+        setError(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
   }, []);
 
   if (loading) return <div className="text-center p-8">Loading data...</div>;
@@ -720,98 +887,112 @@ export default DataFetcher;`
     },
 
     // Python Challenges (6)
-    {
-      id: 'python-1',
-      title: 'Prime Number Checker',
-      description: 'Write a Python function that checks if a given number is prime.',
-      category: 'python',
-      starterCode: {
-        html: `<!DOCTYPE html>
+{
+  id: 'python-1',
+  title: 'Prime Number Checker',
+  description: 'Write a Python function that checks if a given number is prime.',
+  category: 'python',
+  starterCode: {
+    html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prime Checker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prime Checker</title>
 </head>
 <body>
-    <p>Open the browser console to see the output.</p>
+  <p>Check the console for output.</p>
 </body>
 </html>`,
-        css: `body { font-family: sans-serif; }`,
-        js: `// This is a Python challenge, but will be executed in a JS-like environment.
-// Imagine this is a Python interpreter.
-// You can write your Python-like logic here.
+
+    css: `body {
+  font-family: sans-serif;
+  padding: 2rem;
+  text-align: center;
+}`,
+
+    js: `// This is a Python challenge rendered in a JavaScript-based playground.
+// You may imagine the following as Python syntax in a real Python environment.
 
 /*
 def is_prime(num):
-    # Your Python code here
-    # if num <= 1:
-    #     return False
-    # for i in range(2, int(num**0.5) + 1):
-    #     if num % i == 0:
-    #         return False
-    # return True
+    if num <= 1:
+        return False
+    for i in range(2, int(num**0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
 
-# print(is_prime(7)) # Expected: True
-# print(is_prime(10)) # Expected: False
+# Example usage:
+print(is_prime(7))   # True
+print(is_prime(10))  # False
 */
 
-// For demonstration in JS environment:
+// To demo in JS environment:
 function isPrimeJS(num) {
-    if (num <= 1) return false;
-    for (let i = 2; i <= Math.sqrt(num); i++) {
-        if (num % i === 0) return false;
-    }
-    return true;
+  if (num <= 1) return false;
+  for (let i = 2; i <= Math.sqrt(num); i++) {
+    if (num % i === 0) return false;
+  }
+  return true;
 }
-console.log("Is 7 prime?", isPrimeJS(7));
-console.log("Is 10 prime?", isPrimeJS(10));
+
+console.log("Is 7 prime?", isPrimeJS(7));    // true
+console.log("Is 10 prime?", isPrimeJS(10));  // false
 `
-      }
-    },
-    {
-      id: 'python-2',
-      title: 'List Reverser',
-      description: 'Write a Python function that reverses a list without using built-in `reverse()` or `[::-1]` slicing.',
-      category: 'python',
-      starterCode: {
-        html: `<!DOCTYPE html>
+  }
+},
+{
+  id: 'python-2',
+  title: 'List Reverser',
+  description: 'Write a Python function that reverses a list without using built-in `reverse()` or `[::-1]` slicing.',
+  category: 'python',
+  starterCode: {
+    html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List Reverser</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>List Reverser</title>
 </head>
 <body>
-    <p>Open the browser console to see the output.</p>
+  <p>Open the browser console to see the output.</p>
 </body>
 </html>`,
-        css: `body { font-family: sans-serif; }`,
-        js: `// Imagine this is a Python interpreter.
+
+    css: `body {
+  font-family: sans-serif;
+  padding: 2rem;
+  text-align: center;
+}`,
+
+    js: `// Simulated Python logic shown in JS-friendly format.
 /*
 def reverse_list(input_list):
-    # Your Python code here
-    # reversed_list = []
-    # for i in range(len(input_list) - 1, -1, -1):
-    #     reversed_list.append(input_list[i])
-    # return reversed_list
+    # Create a new list and append items from the end
+    reversed_list = []
+    for i in range(len(input_list) - 1, -1, -1):
+        reversed_list.append(input_list[i])
+    return reversed_list
 
-# my_list = [1, 2, 3, 4, 5]
-# print(reverse_list(my_list)) # Expected: [5, 4, 3, 2, 1]
+# Example usage:
+my_list = [1, 2, 3, 4, 5]
+print(reverse_list(my_list))  # Output: [5, 4, 3, 2, 1]
 */
 
-// For demonstration in JS environment:
+// JavaScript version for demo:
 function reverseListJS(arr) {
-    let reversedArr = [];
-    for (let i = arr.length - 1; i >= 0; i--) {
-        reversedArr.push(arr[i]);
-    }
-    return reversedArr;
+  const reversed = [];
+  for (let i = arr.length - 1; i >= 0; i--) {
+    reversed.push(arr[i]);
+  }
+  return reversed;
 }
-console.log("Reversed [1,2,3]:", reverseListJS([1, 2, 3]));
+
+console.log("Reversed [1, 2, 3, 4, 5]:", reverseListJS([1, 2, 3, 4, 5]));
 `
-      }
-    },
+  }
+},
     {
       id: 'python-3',
       title: 'Count Vowels',
@@ -834,12 +1015,12 @@ console.log("Reversed [1,2,3]:", reverseListJS([1, 2, 3]));
 /*
 def count_vowels(s):
     # Your Python code here
-    # vowels = "aeiouAEIOU"
-    # count = 0
-    # for char in s:
-    #     if char in vowels:
-    #         count += 1
-    # return count
+    vowels = "aeiouAEIOU"
+    count = 0
+    for char in s:
+        if char in vowels:
+            count += 1
+    return count
 
 # print(count_vowels("Hello World")) # Expected: 3
 */
@@ -881,19 +1062,19 @@ console.log("Vowels in 'Hello World':", countVowelsJS("Hello World"));
 /*
 def calculate(num1, num2, operator):
     # Your Python code here
-    # if operator == '+':
-    #     return num1 + num2
-    # elif operator == '-':
-    #     return num1 - num2
-    # elif operator == '*':
-    #     return num1 * num2
-    # elif operator == '/':
-    #     if num2 != 0:
-    #         return num1 / num2
-    #     else:
-    #         return "Error: Division by zero"
-    # else:
-    #     return "Error: Invalid operator"
+    if operator == '+':
+        return num1 + num2
+    elif operator == '-':
+        return num1 - num2
+    elif operator == '*':
+        return num1 * num2
+    elif operator == '/':
+        if num2 != 0:
+            return num1 / num2
+        else:
+            return "Error: Division by zero"
+    else:
+        return "Error: Invalid operator"
 
 # print(calculate(10, 5, '+')) # Expected: 15
 # print(calculate(10, 0, '/')) # Expected: Error: Division by zero
@@ -994,10 +1175,10 @@ console.log(\`Read from file: \${readDataJS}\`);
 /*
 def factorial_recursive(n):
     # Your Python code here
-    # if n == 0:
-    #     return 1
-    # else:
-    #     return n * factorial_recursive(n - 1)
+    if n == 0:
+        return 1
+    else:
+        return n * factorial_recursive(n - 1)
 
 # print(factorial_recursive(5)) # Expected: 120
 */
@@ -1041,23 +1222,23 @@ console.log("Factorial of 5 (recursive):", factorialRecursiveJS(5));
 
     push(element) {
         // Your code here
-        // this.items.push(element);
+        this.items.push(element);
     }
 
     pop() {
         // Your code here
-        // if (this.items.length === 0) return "Underflow";
-        // return this.items.pop();
+        if (this.items.length === 0) return "Underflow";
+        return this.items.pop();
     }
 
     peek() {
         // Your code here
-        // return this.items[this.items.length - 1];
+        return this.items[this.items.length - 1];
     }
 
     isEmpty() {
         // Your code here
-        // return this.items.length === 0;
+        return this.items.length === 0;
     }
 }
 
@@ -1096,24 +1277,24 @@ console.log("Stack top after pop:", stack.peek()); // Expected: 10
 
     enqueue(element) {
         // Your code here
-        // this.items.push(element);
+        this.items.push(element);
     }
 
     dequeue() {
         // Your code here
-        // if (this.items.length === 0) return "Underflow";
-        // return this.items.shift(); // Note: shift() can be inefficient for large arrays
+        if (this.items.length === 0) return "Underflow";
+        return this.items.shift(); // Note: shift() can be inefficient for large arrays
     }
 
     front() {
         // Your code here
-        // if (this.items.length === 0) return null;
-        // return this.items[0];
+        if (this.items.length === 0) return null;
+        return this.items[0];
     }
 
     isEmpty() {
         // Your code here
-        // return this.items.length === 0;
+        return this.items.length === 0;
     }
 }
 
@@ -1148,8 +1329,8 @@ console.log("Queue front after dequeue:", queue.front()); // Expected: 20
         js: `class Node {
     constructor(data) {
         // Your code here
-        // this.data = data;
-        // this.next = null;
+        this.data = data;
+        this.next = null;
     }
 }
 
@@ -1184,9 +1365,9 @@ console.log("Node 1's next node data:", node1.next.data); // Expected: 20
         js: `class TreeNode {
     constructor(value) {
         // Your code here
-        // this.value = value;
-        // this.left = null;
-        // this.right = null;
+        this.value = value;
+        this.left = null;
+        this.right = null;
     }
 }
 
@@ -1226,12 +1407,12 @@ console.log("Right child value:", root.right.value); // Expected: 15
 
     set(key, value) {
         // Your code here
-        // this.map[key] = value;
+        this.map[key] = value;
     }
 
     get(key) {
         // Your code here
-        // return this.map[key];
+        return this.map[key];
     }
 }
 
@@ -1270,15 +1451,15 @@ console.log("City (not set):", myMap.get('city')); // Expected: undefined
 
     addVertex(vertex) {
         // Your code here
-        // if (!this.adjacencyList[vertex]) {
-        //     this.adjacencyList[vertex] = [];
-        // }
+        if (!this.adjacencyList[vertex]) {
+            this.adjacencyList[vertex] = [];
+        }
     }
 
     addEdge(vertex1, vertex2) {
         // Your code here
-        // this.adjacencyList[vertex1].push(vertex2);
-        // this.adjacencyList[vertex2].push(vertex1); // For undirected graph
+        this.adjacencyList[vertex1].push(vertex2);
+        this.adjacencyList[vertex2].push(vertex1); // For undirected graph
     }
 }
 
@@ -1318,15 +1499,15 @@ console.log("Graph Adjacency List:", graph.adjacencyList);
         css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
         js: `function bubbleSort(arr) {
     // Your code here
-    // let n = arr.length;
-    // for (let i = 0; i < n - 1; i++) {
-    //     for (let j = 0; j < n - i - 1; j++) {
-    //         if (arr[j] > arr[j + 1]) {
-    //             [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]]; // Swap
-    //         }
-    //     }
-    // }
-    // return arr;
+    let n = arr.length;
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]]; // Swap
+            }
+        }
+    }
+    return arr;
 }
 
 document.getElementById('sortButton').addEventListener('click', () => {
@@ -1359,12 +1540,12 @@ document.getElementById('sortButton').addEventListener('click', () => {
         css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
         js: `function linearSearch(arr, target) {
     // Your code here
-    // for (let i = 0; i < arr.length; i++) {
-    //     if (arr[i] === target) {
-    //         return i;
-    //     }
-    // }
-    // return -1;
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] === target) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 document.getElementById('searchButton').addEventListener('click', () => {
@@ -1403,12 +1584,12 @@ document.getElementById('searchButton').addEventListener('click', () => {
         css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
         js: `function factorialIterative(n) {
     // Your code here
-    // if (n === 0) return 1;
-    // let result = 1;
-    // for (let i = 1; i <= n; i++) {
-    //     result *= i;
-    // }
-    // return result;
+    if (n === 0) return 1;
+    let result = 1;
+    for (let i = 1; i <= n; i++) {
+        result *= i;
+    }
+    return result;
 }
 
 document.getElementById('calculateButton').addEventListener('click', () => {
@@ -1444,14 +1625,14 @@ document.getElementById('calculateButton').addEventListener('click', () => {
         css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
         js: `function findMaxMin(arr) {
     // Your code here
-    // if (arr.length === 0) return { max: undefined, min: undefined };
-    // let max = arr[0];
-    // let min = arr[0];
-    // for (let i = 1; i < arr.length; i++) {
-    //     if (arr[i] > max) max = arr[i];
-    //     if (arr[i] < min) min = arr[i];
-    // }
-    // return { max, min };
+    if (arr.length === 0) return { max: undefined, min: undefined };
+    let max = arr[0];
+    let min = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+        if (arr[i] > max) max = arr[i];
+        if (arr[i] < min) min = arr[i];
+    }
+    return { max, min };
 }
 
 document.getElementById('findButton').addEventListener('click', () => {
@@ -1484,7 +1665,12 @@ document.getElementById('findButton').addEventListener('click', () => {
         css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
         js: `function sumOfN(n) {
     // Your code here (iterative or formula)
-    // Example iterative: let sum = 0; for (let i = 1; i <= n; i++) sum += i; return sum;
+    // Example iterative:
+    let sum = 0;
+    for (let i = 1; i <= n; i++) {
+        sum += i;
+    }
+    return sum;
     // Example formula: return n * (n + 1) / 2;
 }
 
@@ -1521,12 +1707,12 @@ document.getElementById('calculateButton').addEventListener('click', () => {
         css: `body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; gap: 10px; }`,
         js: `function areAnagrams(str1, str2) {
     // Your code here
-    // const cleanStr1 = str1.toLowerCase().replace(/[^a-z0-9]/g, '');
-    // const cleanStr2 = str2.toLowerCase().replace(/[^a-z0-9]/g, '');
-    // if (cleanStr1.length !== cleanStr2.length) return false;
-    // const sortedStr1 = cleanStr1.split('').sort().join('');
-    // const sortedStr2 = cleanStr2.split('').sort().join('');
-    // return sortedStr1 === sortedStr2;
+    const cleanStr1 = str1.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanStr2 = str2.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cleanStr1.length !== cleanStr2.length) return false;
+    const sortedStr1 = cleanStr1.split('').sort().join('');
+    const sortedStr2 = cleanStr2.split('').sort().join('');
+    return sortedStr1 === sortedStr2;
 }
 
 document.getElementById('checkButton').addEventListener('click', () => {
@@ -1545,6 +1731,9 @@ document.getElementById('checkButton').addEventListener('click', () => {
     },
   ];
 
+  // Ref for the code editor area
+  const codeEditorRef = useRef(null);
+
   const loadChallenge = (challenge: Challenge) => {
     setHtmlCode(challenge.starterCode.html);
     setCssCode(challenge.starterCode.css);
@@ -1552,6 +1741,11 @@ document.getElementById('checkButton').addEventListener('click', () => {
     setActiveTab('javascript'); // Default to JS tab after loading
     setOutput(''); // Clear previous output
     toast.success(`Loaded challenge: ${challenge.title}`);
+
+    // Scroll to the code editor area
+    if (codeEditorRef.current) {
+      codeEditorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const runCode = () => {
@@ -1636,16 +1830,21 @@ document.getElementById('checkButton').addEventListener('click', () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-8 flex justify-between items-center"
         >
-          <h1 className={`text-3xl font-bold mb-2 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>
-            Code Playground
-          </h1>
-          <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-            Experiment with HTML, CSS, and JavaScript in real-time
-          </p>
+          <div>
+            <h1 className={`text-3xl font-bold mb-2 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>
+              Code Playground
+            </h1>
+            <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Experiment with HTML, CSS, and JavaScript in real-time
+            </p>
+          </div>
+          <Button onClick={toggleTheme} variant="outline" className="ml-4">
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </Button>
         </motion.div>
 
         {/* Action Buttons */}
@@ -1669,7 +1868,7 @@ document.getElementById('checkButton').addEventListener('click', () => {
           </Button>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div ref={codeEditorRef} className="grid grid-cols-1 lg:grid-cols-2 gap-6"> {/* Added ref here */}
           {/* Code Editor */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
