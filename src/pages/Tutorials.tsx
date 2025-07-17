@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Clock, Star, Filter, Search, ChevronRight, Bookmark, Sun, Moon, ArrowLeft } from 'lucide-react';
+import { useThemeStore } from '../stores/themeStore'; // Import useThemeStore
 
 // Simple Card component (inline for self-containment)
 const Card = ({ children, className = '', isDark }) => (
@@ -105,7 +106,7 @@ const TutorialDetailPage = ({ tutorial, onBack, isDark }) => {
 // Main App Component
 const App = () => {
   // State for dark mode, search term, selected category, and selected difficulty
-  const [isDark, setIsDark] = useState(false);
+  const { isDark } = useThemeStore(); // Use isDark from the external theme store
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
@@ -192,7 +193,7 @@ user.name = "Bob"; // Valid: object content can be modified
                 <ul>
                   <li><code>string</code>: e.g., "hello", 'world'</li>
                   <li><code>number</code>: e.g., 10, 3.14, -5</li>
-                  <li><code>boolean</code>: <code>true</code> or <code>false</code></li>
+                  <li><code>boolean</code>: e.g., <code>true</code> or <code>false</code></li>
                   <li><code>null</code>: intentional absence of any object value</li>
                   <li><code>undefined</code>: a variable that has not been assigned a value</li>
                   <li><code>symbol</code> (ES6): unique and immutable primitive value</li>
@@ -979,7 +980,7 @@ h1 &#123;
           content: `
             <p>JavaScript adds dynamic and interactive behavior to web pages.</p>
             <h4>Adding JavaScript to HTML:</h4>
-            <p>Using the &#96;&lt;script&gt;&#96; tag, typically at the end of the &#96;&lt;body&gt;&#96;.</p>
+            <p>Using the &#96;&lt;script&#96; tag, typically at the end of the &#96;&lt;body&gt;&#96;.</p>
             <pre><code class="language-html">
 &lt;body&gt;
     &lt;h1 id="myHeading"&gt;Hello!&lt;/h1&gt;
@@ -1059,13 +1060,11 @@ button.addEventListener("click", () => &#123;
   return (
     // Main container for the entire application
     <div className={`min-h-screen flex flex-col lg:flex-row ${isDark ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'} font-inter`}>
-      {/* Mobile Sidebar Toggle */}
+      {/* Mobile Sidebar Toggle - Removed theme toggle here as it's handled by Navbar */}
       <div className="lg:hidden p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-xl font-semibold">Tutorials</h2>
         <div className="flex items-center space-x-4">
-          <Button variant="secondary" onClick={() => setIsDark(!isDark)} size="sm" className="rounded-full p-2" isDark={isDark}>
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </Button>
+          {/* Removed theme toggle button */}
           <Button variant="secondary" onClick={() => setIsSidebarOpen(!isSidebarOpen)} size="sm" className="rounded-full p-2" isDark={isDark}>
             <Filter className="w-5 h-5" />
           </Button>
@@ -1080,9 +1079,7 @@ button.addEventListener("click", () => &#123;
         {/* Sidebar Header/Logo */}
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-blue-600">QuickRef</h2>
-          <Button variant="secondary" onClick={() => setIsDark(!isDark)} size="sm" className="rounded-full p-2 hidden lg:inline-flex" isDark={isDark}>
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </Button>
+          {/* Removed theme toggle button */}
           <Button variant="secondary" onClick={() => setIsSidebarOpen(false)} size="sm" className="rounded-full p-2 lg:hidden" isDark={isDark}>
             <ChevronRight className="w-5 h-5 rotate-180" /> {/* Close button for mobile */}
           </Button>

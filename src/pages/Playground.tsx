@@ -1,18 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Save, Share, Sun, Moon } from 'lucide-react';
-
-// Mocking external dependencies for a self-contained example
-// --- Mock useThemeStore ---
-const useThemeStore = () => {
-  const [isDark, setIsDark] = useState(false); // Default to light theme for clarity
-
-  const toggleTheme = () => {
-    setIsDark(prevIsDark => !prevIsDark);
-  };
-
-  return { isDark, toggleTheme };
-};
+import { useThemeStore } from '../stores/themeStore'; // Import the actual useThemeStore
 
 // --- Mock toast (react-hot-toast) ---
 const toast = {
@@ -132,7 +121,7 @@ interface Challenge {
 
 // --- Main Playground Component ---
 const App = () => {
-  const { isDark, toggleTheme } = useThemeStore();
+  const { isDark, toggleTheme } = useThemeStore(); // Use isDark and toggleTheme from the external theme store
   const [activeTab, setActiveTab] = useState('javascript');
   const [output, setOutput] = useState('');
   const [htmlCode, setHtmlCode] = useState(`<!DOCTYPE html>
@@ -840,9 +829,7 @@ export default ControlledInput;`
       starterCode: {
         html: `<!-- No specific HTML needed, React will render into #root -->`,
         css: `/* Tailwind CSS is included in the React environment */`,
-        js: `import React, { useState, useEffect } from 'react';
-
-const DataFetcher = () => {
+        js: `import React, { useState, useEffect } => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

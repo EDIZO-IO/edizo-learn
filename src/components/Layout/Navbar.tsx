@@ -10,6 +10,8 @@ import {
   GraduationCap,
   Menu,
   X,
+  Sun, // Import Sun icon
+  Moon, // Import Moon icon
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useThemeStore } from '../../stores/themeStore';
@@ -20,7 +22,7 @@ import { toast } from 'react-hot-toast';
 const Navbar = () => {
   const location = useLocation();
   const { user } = useAuthStore();
-  const { isDark } = useThemeStore();
+  const { isDark, toggleTheme } = useThemeStore(); // Destructure toggleTheme
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const navigation = [
@@ -92,6 +94,18 @@ const Navbar = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-full transition-colors duration-200 ${
+                isDark
+                  ? 'text-yellow-400 hover:bg-gray-700'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
             {/* User */}
             {user ? (
               <div className="hidden md:flex items-center space-x-3">
@@ -198,6 +212,28 @@ const Navbar = () => {
                     </button>
                   </Link>
                 )}
+                {/* Theme Toggle for Mobile */}
+                <button
+                  onClick={() => {
+                    toggleTheme();
+                    setIsMenuOpen(false); // Close menu after toggling theme
+                  }}
+                  className={`text-left w-full px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
+                    isDark
+                      ? 'text-yellow-400 hover:bg-gray-700'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {isDark ? (
+                    <>
+                      <Sun className="w-4 h-4" /> Light Mode
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-4 h-4" /> Dark Mode
+                    </>
+                  )}
+                </button>
               </div>
             </motion.div>
           )}

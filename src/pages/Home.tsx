@@ -8,9 +8,6 @@ import {
   Brain, 
   Trophy, 
   Users, 
-  Star,
-  Zap,
-  Target,
   Award
 } from 'lucide-react';
 import { useThemeStore } from '../stores/themeStore';
@@ -196,7 +193,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Stats Section
       <section className={`py-20 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -230,9 +227,9 @@ const Home = () => {
             })}
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -298,7 +295,7 @@ const Home = () => {
             ))}
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className={`py-20 ${isDark ? 'bg-gray-800' : 'bg-blue-50'}`}>

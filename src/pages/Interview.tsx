@@ -2,13 +2,171 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GraduationCap, Building, Clock, Star, Filter, Search, ChevronRight, Target, Award, Code, Cpu, Database, Layers, Smartphone, Server, Cloud, Shield, GitBranch } from 'lucide-react';
-import { useThemeStore } from '../stores/themeStore';
-import Card from '../components/UI/Card';
-import Button from '../components/UI/Button';
-import { problems, interviewQuestions } from '../data/problemData';
+import { useThemeStore } from '../stores/themeStore'; // Import the actual useThemeStore
+
+// Mock definitions for demonstration purposes (Card and Button will be updated to use isDark from store)
+const Card = ({ children, className = '' }) => {
+  const { isDark } = useThemeStore(); // Use isDark from the external theme store
+  return (
+    <div className={`p-6 rounded-lg shadow-md ${isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'} ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+const Button = ({ children, size = 'md', variant = 'primary', className = '', ...props }) => {
+  const { isDark } = useThemeStore(); // Use isDark from the external theme store
+  let baseStyle = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500';
+  let sizeStyle = '';
+  let variantStyle = '';
+
+  switch (size) {
+    case 'sm': sizeStyle = 'px-3 py-1.5 text-sm'; break;
+    case 'md': sizeStyle = 'px-4 py-2 text-base'; break;
+    case 'lg': sizeStyle = 'px-5 py-2.5 text-lg'; break;
+    default: sizeStyle = 'px-4 py-2 text-base';
+  }
+
+  switch (variant) {
+    case 'primary': variantStyle = 'bg-blue-600 text-white hover:bg-blue-700'; break;
+    case 'outline': variantStyle = `border ${isDark ? 'border-blue-400 text-blue-400 hover:bg-gray-700' : 'border-blue-600 text-blue-600 hover:bg-blue-50'}`; break;
+    default: variantStyle = 'bg-blue-600 text-white hover:bg-blue-700';
+  }
+
+  return (
+    <button className={`${baseStyle} ${sizeStyle} ${variantStyle} ${className}`} {...props}>
+      {children}
+    </button>
+  );
+};
+
+const problems = []; // Mock problems data
+const interviewQuestions = [
+  {
+    id: '1',
+    title: 'Two Sum',
+    description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+    difficulty: 'easy',
+    company: 'google',
+    category: 'algorithms',
+    tags: ['array', 'hash table'],
+    frequency: 95,
+    timeComplexity: 'O(n)',
+    spaceComplexity: 'O(n)',
+  },
+  {
+    id: '2',
+    title: 'Longest Substring Without Repeating Characters',
+    description: 'Given a string s, find the length of the longest substring without repeating characters.',
+    difficulty: 'medium',
+    company: 'amazon',
+    category: 'algorithms',
+    tags: ['string', 'sliding window'],
+    frequency: 88,
+    timeComplexity: 'O(n)',
+    spaceComplexity: 'O(min(n, m))',
+  },
+  {
+    id: '3',
+    title: 'Merge Two Sorted Lists',
+    description: 'Merge two sorted linked lists and return it as a new sorted list. The new list should be made by splicing together the nodes of the first two lists.',
+    difficulty: 'easy',
+    company: 'microsoft',
+    category: 'dsa',
+    tags: ['linked list'],
+    frequency: 70,
+    timeComplexity: 'O(n + m)',
+    spaceComplexity: 'O(1)',
+  },
+  {
+    id: '4',
+    title: 'System Design: Design TinyURL',
+    description: 'Design a URL shortening service like TinyURL.',
+    difficulty: 'hard',
+    company: 'google',
+    category: 'system',
+    tags: ['system design', 'distributed systems'],
+    frequency: 80,
+    timeComplexity: 'N/A',
+    spaceComplexity: 'N/A',
+  },
+  {
+    id: '5',
+    title: 'SQL: Second Highest Salary',
+    description: 'Write a SQL query to get the second highest salary from the Employee table.',
+    difficulty: 'medium',
+    company: 'microsoft',
+    category: 'db',
+    tags: ['sql', 'database'],
+    frequency: 65,
+    timeComplexity: 'N/A',
+    spaceComplexity: 'N/A',
+  },
+  {
+    id: '6',
+    title: 'Implement Debounce Function',
+    description: 'Implement a debounce function in JavaScript.',
+    difficulty: 'medium',
+    company: 'facebook',
+    category: 'frontend',
+    tags: ['javascript', 'frontend', 'hoisting'],
+    frequency: 75,
+    timeComplexity: 'O(1)',
+    spaceComplexity: 'O(1)',
+  },
+  {
+    id: '7',
+    title: 'Reverse a Linked List',
+    description: 'Reverse a singly linked list.',
+    difficulty: 'easy',
+    company: 'apple',
+    category: 'dsa',
+    tags: ['linked list'],
+    frequency: 90,
+    timeComplexity: 'O(n)',
+    spaceComplexity: 'O(1)',
+  },
+  {
+    id: '8',
+    title: 'Find the Missing Number',
+    description: 'Given an array nums containing n distinct numbers in the range [0, n], return the only number in the range that is missing from the array.',
+    difficulty: 'easy',
+    company: 'netflix',
+    category: 'algorithms',
+    tags: ['array', 'math'],
+    frequency: 85,
+    timeComplexity: 'O(n)',
+    spaceComplexity: 'O(1)',
+  },
+  {
+    id: '9',
+    title: 'Validate Binary Search Tree',
+    description: 'Given the root of a binary tree, determine if it is a valid binary search tree (BST).',
+    difficulty: 'medium',
+    company: 'google',
+    category: 'dsa',
+    tags: ['tree', 'binary search tree'],
+    frequency: 78,
+    timeComplexity: 'O(n)',
+    spaceComplexity: 'O(h)', // h is height of tree
+  },
+  {
+    id: '10',
+    title: 'Rate Limiter Design',
+    description: 'Design a rate limiter.',
+    difficulty: 'hard',
+    company: 'uber',
+    category: 'system',
+    tags: ['system design', 'distributed systems'],
+    frequency: 72,
+    timeComplexity: 'N/A',
+    spaceComplexity: 'N/A',
+  },
+];
+
 
 const Interview = () => {
-  const { isDark } = useThemeStore();
+  const { isDark } = useThemeStore(); // Use isDark from the external theme store
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -51,8 +209,8 @@ const Interview = () => {
 
   const filteredQuestions = interviewQuestions.filter(question => {
     const matchesSearch = question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         question.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         question.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                          question.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          question.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCompany = selectedCompany === 'all' || question.company === selectedCompany;
     const matchesDifficulty = selectedDifficulty === 'all' || question.difficulty === selectedDifficulty;
     const matchesCategory = selectedCategory === 'all' || question.category === selectedCategory;
@@ -237,7 +395,9 @@ const Interview = () => {
                 >
                   {categories.map(category => (
                     <option key={category.id} value={category.id}>
-                      {category.icon} {category.name}
+                      {/* Note: React components cannot be directly rendered inside <option> tags. */}
+                      {/* For icons, you might need to use emojis or a different approach if not already handled by your select styling. */}
+                      {category.name}
                     </option>
                   ))}
                 </select>
@@ -294,6 +454,7 @@ const Interview = () => {
                         {companies.find(c => c.id === question.company)?.name}
                       </div>
                       <div className={`flex items-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {/* Render category icon directly if it's a React component, otherwise handle as text/emoji */}
                         {categories.find(c => c.id === question.category)?.icon}
                         <span className="ml-1">{categories.find(c => c.id === question.category)?.name}</span>
                       </div>
@@ -334,11 +495,7 @@ const Interview = () => {
                         <ChevronRight className="ml-1 w-4 h-4" />
                       </Button>
                     </Link>
-                    <Link to={`/interview/problems/${question.id}?tab=solution`}>
-                      <Button size="sm" variant="outline" className="w-full">
-                        View Solution
-                      </Button>
-                    </Link>
+                    {/* Removed the "View Solution" button */}
                   </div>
                 </div>
               </Card>
